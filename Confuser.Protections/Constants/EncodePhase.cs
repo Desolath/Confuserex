@@ -74,15 +74,15 @@ namespace Confuser.Protections.Constants {
 			int buffIndex = 0;
 			foreach (uint dat in moduleCtx.EncodedBuffer) {
 				encodedBuff[buffIndex++] = (byte)((dat >> 0) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 8) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 16) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 24) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 9) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 18) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 27) & 0xff);
 			}
 			Debug.Assert(buffIndex == encodedBuff.Length);
 			encodedBuff = context.Registry.GetService<ICompressionService>().Compress(encodedBuff);
 			context.CheckCancellation();
 
-			uint compressedLen = (uint)(encodedBuff.Length + 3) / 4;
+			uint compressedLen = (uint)(encodedBuff.Length + 6) / 8;
 			compressedLen = (compressedLen + 0xfu) & ~0xfu;
 			var compressedBuff = new uint[compressedLen];
 			Buffer.BlockCopy(encodedBuff, 0, compressedBuff, 0, encodedBuff.Length);
@@ -93,9 +93,9 @@ namespace Confuser.Protections.Constants {
 			var key = new uint[0x10];
 			uint state = keySeed;
 			for (int i = 0; i < 0x10; i++) {
-				state ^= state >> 12;
-				state ^= state << 25;
-				state ^= state >> 27;
+				state ^= state >> 15;
+				state ^= state << 29;
+				state ^= state >> 32;
 				key[i] = state;
 			}
 
