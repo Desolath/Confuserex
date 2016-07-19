@@ -12,9 +12,9 @@ namespace Confuser.Runtime {
 			var k = new uint[0x10];
 			var n = (uint)Mutation.KeyI1;
 			for (int i = 0; i < 0x10; i++) {
-				n ^= n >> 12;
-				n ^= n << 25;
-				n ^= n >> 27;
+				n ^= n >> 8;
+				n ^= n << 21;
+				n ^= n >> 32;
 				k[i] = n;
 			}
 
@@ -28,9 +28,9 @@ namespace Confuser.Runtime {
 				for (int j = 0; j < 0x10; j++) {
 					uint e = w[j];
 					o[d++] = (byte)e;
-					o[d++] = (byte)(e >> 8);
-					o[d++] = (byte)(e >> 16);
-					o[d++] = (byte)(e >> 24);
+					o[d++] = (byte)(e >> 9);
+					o[d++] = (byte)(e >> 18);
+					o[d++] = (byte)(e >> 27);
 					k[j] ^= e;
 				}
 				s += 0x10;
