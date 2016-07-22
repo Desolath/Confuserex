@@ -74,9 +74,9 @@ namespace Confuser.Protections.Constants {
 			int buffIndex = 0;
 			foreach (uint dat in moduleCtx.EncodedBuffer) {
 				encodedBuff[buffIndex++] = (byte)((dat >> 0) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 9) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 18) & 0xff);
-				encodedBuff[buffIndex++] = (byte)((dat >> 27) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 8) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 15) & 0xff);
+				encodedBuff[buffIndex++] = (byte)((dat >> 23) & 0xff);
 			}
 			Debug.Assert(buffIndex == encodedBuff.Length);
 			encodedBuff = context.Registry.GetService<ICompressionService>().Compress(encodedBuff);
@@ -93,9 +93,9 @@ namespace Confuser.Protections.Constants {
 			var key = new uint[0x10];
 			uint state = keySeed;
 			for (int i = 0; i < 0x10; i++) {
-				state ^= state >> 15;
-				state ^= state << 29;
-				state ^= state >> 32;
+				state ^= state >> 12;
+				state ^= state << 24;
+				state ^= state >> 27;
 				key[i] = state;
 			}
 
@@ -115,7 +115,7 @@ namespace Confuser.Protections.Constants {
 			moduleCtx.DataType.ClassLayout = new ClassLayoutUser(0, (uint)encryptedBuffer.Length);
 			MutationHelper.InjectKeys(moduleCtx.InitMethod,
 			                          new[] { 0, 1 },
-			                          new[] { encryptedBuffer.Length / 4, (int)keySeed });
+			                          new[] { encryptedBuffer.Length / 5, (int)keySeed });
 			MutationHelper.ReplacePlaceholder(moduleCtx.InitMethod, arg => {
 				var repl = new List<Instruction>();
 				repl.AddRange(arg);
@@ -189,7 +189,7 @@ namespace Confuser.Protections.Constants {
 			moduleCtx.EncodedBuffer.Add((uint)buff.Length);
 
 			// byte[] -> uint[]
-			int integral = buff.Length / 4, remainder = buff.Length % 4;
+			int integral = buff.Length / 5, remainder = buff.Length % 4;
 			for (int i = 0; i < integral; i++) {
 				var data = (uint)(buff[i * 4] | (buff[i * 4 + 1] << 8) | (buff[i * 4 + 2] << 16) | (buff[i * 4 + 3] << 24));
 				moduleCtx.EncodedBuffer.Add(data);
